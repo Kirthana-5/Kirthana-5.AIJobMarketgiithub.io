@@ -1,0 +1,37 @@
+import pandas as pd
+df = pd.read_csv("Linkedin job listings.csv")
+df.head()
+df.drop(columns=["Company Id", "Job Num Applicants", "Job Posted Time", "Unnamed: 12"], inplace=True)
+df.rename(columns={
+    "Job Title": "Job_Title",
+    "Company Name": "Company",
+    "Job Location": "Location",
+    "Job Seniority Level": "Experience_Level",
+    "Job Employment Type": "Employment_Type",
+    "Job Industries": "Industry",
+    "Job Summary": "Job_Description",
+    "Job Function": "Job_Function",
+    "Job Posted Date": "Posting_Date"
+}, inplace=True)
+df["Posting_Date"] = pd.to_datetime(df["Posting_Date"], errors='coerce')
+df.head()
+ai_keywords = [
+    "ai", "artificial intelligence", "machine learning", "deep learning", 
+    "automation", "chatgpt", "natural language processing", "nlp", 
+    "data science", "computer vision"
+]
+
+def is_ai_job(description):
+    if isinstance(description, str):
+        description = description.lower()
+        return int(any(keyword in description for keyword in ai_keywords))
+    return 0
+
+df["AI_Flag"] = df["Job_Description"].apply(is_ai_job)
+df.head(20)
+df = df.dropna(subset=['Posting_Date'])
+df['Posting_Date'] = pd.to_datetime(df['Posting_Date'], errors='coerce')df['Posting_Date'] = pd.to_datetime(df['Posting_Date'], errors='coerce')  
+df['Posting_Date'] = df['Posting_Date'].dt.tz_localize(None)  
+df['Posting_Month'] = df['Posting_Date'].dt.to_period('M')
+df['Posting_Date'] = df['Posting_Date'].dt.strftime('%Y-%m-%d')
+df.to_csv("Cleaned_LinkedIn_Jobs_AI.csv", index=False)
